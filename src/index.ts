@@ -5,6 +5,7 @@ import cookieParser from "cookie-parser";
 import cors from "cors";
 import mongoose from "mongoose";
 import dotenv from "dotenv";
+import router from "./router/routes";
 
 dotenv.config({ path: "./.env" });
 
@@ -20,6 +21,7 @@ app.use(
 app.use(compression());
 app.use(cookieParser());
 app.use(bodyParser.json());
+app.use("/api", router);
 
 const startServer = async () => {
   try {

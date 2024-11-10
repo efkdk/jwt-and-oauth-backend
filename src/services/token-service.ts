@@ -24,7 +24,8 @@ class TokenService {
   }
 
   async removeToken(refreshToken: string) {
-    await Token.deleteOne({ refreshToken });
+    const response = await Token.deleteOne({ refreshToken });
+    return response;
   }
 
   async validateAccessToken(accessToken: string) {

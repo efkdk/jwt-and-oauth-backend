@@ -1,6 +1,7 @@
 import User from "../models/user";
 import bcrypt from "bcrypt";
 import { createAndSaveTokens } from "../helpers/index";
+import tokenService from "./token-service";
 
 class UserService {
   async registration(username: string, email: string, password: string) {
@@ -28,7 +29,6 @@ class UserService {
     email: string | undefined,
     password: string
   ) {
-    console.log("login with", username, email, password);
     const candidate = username
       ? await User.findOne({ username })
       : await User.findOne({ email });
@@ -49,6 +49,15 @@ class UserService {
       candidate.email,
       candidate._id
     );
+    return response;
+  }
+
+  async logout(refreshToken: string) {
+    const token = await tokenService.findToken(refreshToken);
+    if (!token) {
+      throw new Error("User not found");
+    }
+    const response = await tokenService.removeToken(refreshToken);
     return response;
   }
 }

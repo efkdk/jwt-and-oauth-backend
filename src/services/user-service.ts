@@ -24,10 +24,11 @@ class UserService {
   }
 
   async login(
-    email: string | undefined,
     username: string | undefined,
+    email: string | undefined,
     password: string
   ) {
+    console.log("login with", username, email, password);
     const candidate = username
       ? await User.findOne({ username })
       : await User.findOne({ email });
@@ -43,7 +44,12 @@ class UserService {
     if (!isPasswordsEquals) {
       throw new Error("Wrong password!");
     }
-    return;
+    const response = await createAndSaveTokens(
+      candidate.username,
+      candidate.email,
+      candidate._id
+    );
+    return response;
   }
 }
 

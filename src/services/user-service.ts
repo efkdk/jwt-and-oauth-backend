@@ -60,6 +60,31 @@ class UserService {
     const response = await tokenService.removeToken(refreshToken);
     return response;
   }
+
+  async refresh(refreshToken: string | undefined) {
+    if (!refreshToken) {
+      throw new Error("User is not authorized");
+    }
+
+    const userData = await tokenService.validateRefreshToken(refreshToken);
+    const tokenFromDB = await tokenService.findToken(refreshToken);
+
+    if (!userData || !tokenFromDB) {
+      throw new Error("User is not authorized");
+    }
+
+    if (typeof userData === "object" && userData !== null) {
+      const user = await User.findById(userData.id);
+      const response = await createAndSaveTokens(
+        user.username,
+        user.email,
+        user._id
+      );
+      return response;
+    } else {
+      throw new Error("Invalid user data");
+    }
+  }
 }
 
 const userService = new UserService();

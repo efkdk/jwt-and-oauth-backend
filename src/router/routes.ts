@@ -13,5 +13,6 @@ router.post(
 
 router.post("/login", userController.login);
 router.post("/logout", userController.logout);
+router.get("/refresh", userController.refresh);
 
 export default router;

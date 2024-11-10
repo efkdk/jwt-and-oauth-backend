@@ -50,6 +50,20 @@ class UserController {
       res.status(400).json(e.message);
     }
   }
+
+  async refresh(req: Request, res: Response) {
+    try {
+      const { refreshToken } = req.cookies;
+      const userData = await userService.refresh(refreshToken);
+      res.cookie("refreshToken", userData.refreshToken as string, {
+        maxAge: 30 * 24 * 60 * 60 * 1000,
+        httpOnly: true,
+      });
+      res.status(200).json(userData);
+    } catch (e) {
+      res.status(400).json(e.message);
+    }
+  }
 }
 
 const userController = new UserController();

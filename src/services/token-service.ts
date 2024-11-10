@@ -1,6 +1,7 @@
 import jwt from "jsonwebtoken";
 import Token from "../models/token";
 import type { IUser, IUserId } from "types/user";
+import { isIUser } from "../helpers/index";
 
 class TokenService {
   generateTokens(payload: IUser) {
@@ -31,9 +32,9 @@ class TokenService {
   async validateAccessToken(accessToken: string) {
     try {
       const userData = jwt.verify(accessToken, process.env.JWT_ACCESS_SECRET);
-      return userData;
+      return isIUser(userData) ? userData : null;
     } catch (e) {
-      console.log(e);
+      console.log("Access token verification failed:", e);
       return null;
     }
   }
@@ -41,9 +42,9 @@ class TokenService {
   async validateRefreshToken(refreshToken: string) {
     try {
       const userData = jwt.verify(refreshToken, process.env.JWT_REFRESH_SECRET);
-      return userData;
+      return isIUser(userData) ? userData : null;
     } catch (e) {
-      console.log(e);
+      console.log("Refresh token verification failed:", e);
       return null;
     }
   }

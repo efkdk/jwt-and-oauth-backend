@@ -1,6 +1,7 @@
 import type { Request, Response } from "express";
 import userService from "../services/user-service";
 import { validationResult } from "express-validator";
+import { AuthenticatedRequest } from "types/user";
 
 class UserController {
   async registration(req: Request, res: Response) {

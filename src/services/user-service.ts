@@ -73,17 +73,13 @@ class UserService {
       throw new Error("User is not authorized");
     }
 
-    if (typeof userData === "object" && userData !== null) {
-      const user = await User.findById(userData.id);
-      const response = await createAndSaveTokens(
-        user.username,
-        user.email,
-        user._id
-      );
-      return response;
-    } else {
-      throw new Error("Invalid user data");
-    }
+    const user = await User.findById(userData.id);
+    const response = await createAndSaveTokens(
+      user.username,
+      user.email,
+      user._id
+    );
+    return response;
   }
 }
 

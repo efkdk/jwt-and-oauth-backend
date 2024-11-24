@@ -1,6 +1,8 @@
-import userController from "../controllers/user-controller";
 import { Router } from "express";
 import { body } from "express-validator";
+import privateController from "../controllers/private-controller";
+import userController from "../controllers/user-controller";
+import authMiddleware from "../middlewares/auth-middleware";
 
 const router = Router();
 
@@ -15,5 +17,7 @@ router.post("/login", userController.login);
 router.post("/logout", userController.logout);
 router.get("/verify/:verificationCode", userController.verify);
 router.get("/refresh", userController.refresh);
+
+router.get("/privateData", authMiddleware, privateController.getPrivateData);
 
 export default router;

@@ -2,7 +2,7 @@ import type { Response, NextFunction } from "express";
 import type { AuthenticatedRequest } from "types/user";
 import tokenService from "../services/token-service";
 
-export default async function AuthMiddleware(
+export default async function authMiddleware(
   req: AuthenticatedRequest,
   res: Response,
   next: NextFunction
@@ -21,7 +21,6 @@ export default async function AuthMiddleware(
     }
 
     const userData = await tokenService.validateAccessToken(accessToken);
-
     req.user = userData;
 
     next();

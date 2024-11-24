@@ -4,7 +4,7 @@ import { validationResult } from "express-validator";
 import { AuthenticatedRequest } from "types/user";
 
 class UserController {
-  async registration(req: Request, res: Response) {
+  async signup(req: Request, res: Response) {
     try {
       const errors = validationResult(req);
       if (!errors.isEmpty()) {
@@ -12,11 +12,7 @@ class UserController {
         return;
       }
       const { username, email, password } = req.body;
-      const userData = await userService.registration(
-        username,
-        email,
-        password
-      );
+      const userData = await userService.signup(username, email, password);
       res.cookie("refreshToken", userData.refreshToken, {
         maxAge: 30 * 24 * 60 * 60 * 1000,
         httpOnly: true,
@@ -27,10 +23,20 @@ class UserController {
     }
   }
 
+  async verify(req: Request, res: Response) {
+    try {
+      const { verificationCode } = req.params;
+      await userService.verify(verificationCode);
+      res.redirect(process.env.CLIENT_URL);
+    } catch (e) {
+      res.status(400).json(e.message);
+    }
+  }
+
   async login(req: Request, res: Response) {
     try {
-      const { username, email, password } = req.body;
-      const userData = await userService.login(username, email, password);
+      const { login, password }: { login: string; password: string } = req.body;
+      const userData = await userService.login(login, password);
       res.cookie("refreshToken", userData.refreshToken, {
         maxAge: 30 * 24 * 60 * 60 * 1000,
         httpOnly: true,
@@ -46,7 +52,7 @@ class UserController {
       const { refreshToken } = req.cookies;
       const response = await userService.logout(refreshToken);
       res.clearCookie("refreshToken");
-      res.status(200).json(response);
+      res.status(200).json(response); // make no response to client
     } catch (e) {
       res.status(400).json(e.message);
     }

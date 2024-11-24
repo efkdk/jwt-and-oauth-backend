@@ -5,7 +5,8 @@ import type { IAuthResponse, IUser, IUserId } from "types/user";
 async function createAndSaveTokens(
   username: string,
   email: string,
-  id: IUserId
+  id: IUserId,
+  isVerified: boolean
 ): Promise<IAuthResponse> {
   const userDto = {
     username,
@@ -14,8 +15,9 @@ async function createAndSaveTokens(
   };
 
   const tokens = tokenService.generateTokens(userDto);
+  const authResponse = { isVerified, ...userDto };
   await tokenService.saveToken(userDto.id, tokens.refreshToken);
-  return { ...tokens, user: userDto };
+  return { ...tokens, user: authResponse };
 }
 
 function isIUser(data: any): data is IUser {

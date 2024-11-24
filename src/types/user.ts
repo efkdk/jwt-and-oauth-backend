@@ -7,7 +7,10 @@ export interface IUser {
   username: string;
   email: string;
   id: IUserId;
+  isVerified: boolean;
 }
+
+export type IUserDto = Omit<IUser, "isVerified">;
 
 export interface IAuthResponse {
   accessToken: string;

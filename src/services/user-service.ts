@@ -2,39 +2,73 @@ import User from "../models/user";
 import bcrypt from "bcrypt";
 import { createAndSaveTokens } from "../helpers/index";
 import tokenService from "./token-service";
+import mailService from "./mail-service";
+import { IAuthResponse } from "types/user";
 
 class UserService {
-  async registration(username: string, email: string, password: string) {
-    const candidate = await User.findOne({ username, email });
-    if (candidate) {
-      throw new Error(`User ${username} ${email} already exists!`);
+  async signup(
+    username: string,
+    email: string,
+    password: string
+  ): Promise<IAuthResponse> {
+    const candidateByUsername = await User.findOne({ username });
+    const candidateByEmail = await User.findOne({ email });
+    if (candidateByEmail || candidateByUsername) {
+      throw new Error(
+        `User ${
+          candidateByUsername && candidateByEmail
+            ? `${username} ${email}`
+            : candidateByUsername
+            ? username
+            : email
+        } already exists!`
+      );
     }
+    const verificationCode = tokenService.generateVerificationToken(email);
+    const verificationLink = `${process.env.API_URL}/api/verify/${verificationCode}`;
+
+    try {
+      mailService.sendActivationMail(email, verificationLink);
+    } catch (e) {
+      throw e;
+    }
+
     const hashedPassword = await bcrypt.hash(password, 3);
     const user = await User.create({
       username,
       email,
       password: hashedPassword,
+      isVerified: false,
+      verificationCode,
     });
 
     const response = await createAndSaveTokens(
       user.username,
       user.email,
-      user._id
+      user._id,
+      user.isVerified
     );
     return response;
   }
 
-  async login(
-    username: string | undefined,
-    email: string | undefined,
-    password: string
-  ) {
-    const candidate = username
-      ? await User.findOne({ username })
-      : await User.findOne({ email });
+  async verify(verificationCode: string) {
+    const user = await User.findOne({ verificationCode });
+    if (!user) {
+      throw new Error(`User not found`);
+    }
+    user.isVerified = true;
+    user.verificationCode = undefined;
+    const { _id, username, email } = await user.save();
+    return { _id, username, email };
+  }
+
+  async login(login: string, password: string) {
+    let candidate =
+      (await User.findOne({ username: login })) ||
+      (await User.findOne({ email: login }));
 
     if (!candidate) {
-      throw new Error("User not found");
+      throw new Error(`User ${login} not found`);
     }
 
     const isPasswordsEquals = await bcrypt.compare(
@@ -47,7 +81,8 @@ class UserService {
     const response = await createAndSaveTokens(
       candidate.username,
       candidate.email,
-      candidate._id
+      candidate._id,
+      candidate.isVerified
     );
     return response;
   }
@@ -77,7 +112,8 @@ class UserService {
     const response = await createAndSaveTokens(
       user.username,
       user.email,
-      user._id
+      user._id,
+      user.isVerified
     );
     return response;
   }

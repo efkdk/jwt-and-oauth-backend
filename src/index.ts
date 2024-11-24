@@ -14,6 +14,7 @@ const app = express();
 
 app.use(
   cors({
+    origin: process.env.CLIENT_URL,
     credentials: true,
   })
 );
@@ -25,6 +26,7 @@ app.use("/api", router);
 
 const startServer = async () => {
   try {
+    console.log("Connecting to mongodb...");
     await mongoose.connect(process.env.DB_URI, {
       serverApi: { version: "1", strict: true, deprecationErrors: true },
     });

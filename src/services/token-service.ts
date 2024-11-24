@@ -1,10 +1,10 @@
 import jwt from "jsonwebtoken";
 import Token from "../models/token";
-import type { IUser, IUserId } from "types/user";
+import type { IUserDto, IUserId } from "types/user";
 import { isIUser } from "../helpers/index";
 
 class TokenService {
-  generateTokens(payload: IUser) {
+  generateTokens(payload: IUserDto) {
     const accessToken = jwt.sign(payload, process.env.JWT_ACCESS_SECRET, {
       expiresIn: "30m",
     });
@@ -12,6 +12,12 @@ class TokenService {
       expiresIn: "30d",
     });
     return { accessToken, refreshToken };
+  }
+
+  generateVerificationToken(email: string) {
+    return jwt.sign({ email }, process.env.JWT_VERIFICATION_SECRET, {
+      expiresIn: "1h",
+    });
   }
 
   async saveToken(userId: IUserId, refreshToken: string) {

@@ -1,7 +1,11 @@
-import mongoose from "mongoose";
+import mongoose, { FilterQuery, QueryOptions, UpdateQuery } from "mongoose";
 
 const UserSchema = new mongoose.Schema(
   {
+    googleId: {
+      type: String,
+      unique: true,
+    },
     username: {
       type: String,
       required: true,
@@ -13,8 +17,7 @@ const UserSchema = new mongoose.Schema(
       unique: true,
     },
     password: {
-      type: String,
-      required: true,
+      type: String, //not required for google Auth
     },
     isVerified: {
       type: Boolean,
@@ -23,6 +26,12 @@ const UserSchema = new mongoose.Schema(
     },
     verificationCode: {
       type: String,
+    },
+    provider: {
+      type: String,
+      enum: ["jwt", "google"],
+      default: "jwt",
+      required: true,
     },
   },
   {

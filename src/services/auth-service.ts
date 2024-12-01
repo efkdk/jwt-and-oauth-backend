@@ -1,29 +1,16 @@
 import User from "../models/user";
 import bcrypt from "bcrypt";
-import { createAndSaveTokens } from "../helpers/index";
+import { createAndSaveTokens, createUser } from "../helpers/index";
 import tokenService from "./token-service";
 import mailService from "./mail-service";
 import { IAuthResponse } from "types/user";
 
-class UserService {
+class AuthService {
   async signup(
     username: string,
     email: string,
     password: string
   ): Promise<IAuthResponse> {
-    const candidateByUsername = await User.findOne({ username });
-    const candidateByEmail = await User.findOne({ email });
-    if (candidateByEmail || candidateByUsername) {
-      throw new Error(
-        `User ${
-          candidateByUsername && candidateByEmail
-            ? `${username} ${email}`
-            : candidateByUsername
-            ? username
-            : email
-        } already exists!`
-      );
-    }
     const verificationCode = tokenService.generateVerificationToken(email);
     const verificationLink = `${process.env.API_URL}/api/verify/${verificationCode}`;
 
@@ -33,12 +20,11 @@ class UserService {
       throw e;
     }
 
-    const hashedPassword = await bcrypt.hash(password, 3);
-    const user = await User.create({
+    const user = await createUser({
       username,
       email,
-      password: hashedPassword,
-      isVerified: false,
+      password,
+      provider: "jwt",
       verificationCode,
     });
 
@@ -57,7 +43,7 @@ class UserService {
       throw new Error(`User not found`);
     }
     user.isVerified = true;
-    user.verificationCode = undefined;
+    user.verificationCode = null;
     const { _id, username, email } = await user.save();
     return { _id, username, email };
   }
@@ -119,6 +105,6 @@ class UserService {
   }
 }
 
-const userService = new UserService();
+const authService = new AuthService();
 
-export default userService;
+export default authService;

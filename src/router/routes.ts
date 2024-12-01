@@ -1,7 +1,7 @@
 import { Router } from "express";
 import { body } from "express-validator";
 import privateController from "../controllers/private-controller";
-import userController from "../controllers/user-controller";
+import authController from "../controllers/auth-controller";
 import authMiddleware from "../middlewares/auth-middleware";
 
 const router = Router();
@@ -10,13 +10,15 @@ router.post(
   "/signup",
   body("email").isEmail(),
   body("password").isLength({ min: 4, max: 32 }),
-  userController.signup
+  authController.signup
 );
 
-router.post("/login", userController.login);
-router.post("/logout", userController.logout);
-router.get("/verify/:verificationCode", userController.verify);
-router.get("/refresh", userController.refresh);
+router.post("/login", authController.login);
+router.post("/logout", authController.logout);
+router.get("/verify/:verificationCode", authController.verify);
+router.get("/refresh", authController.refresh);
+
+router.get("/sessions/oauth/google", authController.googleOAuthHandler);
 
 router.get("/privateData", authMiddleware, privateController.getPrivateData);
 

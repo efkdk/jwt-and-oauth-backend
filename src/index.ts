@@ -6,10 +6,10 @@ import cors from "cors";
 import mongoose from "mongoose";
 import dotenv from "dotenv";
 import router from "./router/routes";
+import type { VercelRequest, VercelResponse } from "@vercel/node";
 
 dotenv.config({ path: "./.env" });
 
-const PORT = process.env.PORT || 5000;
 const app = express();
 
 app.use(
@@ -24,17 +24,21 @@ app.use(cookieParser(process.env.COOKIE_PARSER_SECRET));
 app.use(bodyParser.json());
 app.use("/api", router);
 
-const startServer = async () => {
+const connectToMongoDB = async () => {
   try {
     console.log("Connecting to mongodb...");
     await mongoose.connect(process.env.DB_URI, {
       serverApi: { version: "1", strict: true, deprecationErrors: true },
     });
     console.log("Connected to mongodb");
-    app.listen(PORT, () => console.log(`Server is running on ${PORT} port`));
   } catch (error) {
-    console.log(error);
+    console.log("MongoDB connection error:", error);
+    throw error;
   }
 };
 
-startServer();
+connectToMongoDB();
+
+export default (req: VercelRequest, res: VercelResponse) => {
+  app(req, res);
+};

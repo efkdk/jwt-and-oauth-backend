@@ -49,12 +49,6 @@ export async function createUser({
   isVerified?: boolean;
 }) {
   try {
-    console.log(
-      "verification code: ",
-      verificationCode,
-      "provider: ",
-      provider
-    );
     const candidateByUsername = await User.findOne({ username });
     const candidateByEmail = await User.findOne({ email });
     if (candidateByEmail || candidateByUsername) {

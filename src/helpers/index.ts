@@ -1,7 +1,8 @@
+import type { IAuthResponse, IUser, IUserId } from "types/user";
+import type { CookieOptions, Response } from "express";
 import { Types } from "mongoose";
 import bcrypt from "bcrypt";
 import tokenService from "../services/token-service";
-import type { IAuthResponse, IUser, IUserId } from "types/user";
 import User from "../models/user";
 
 async function createAndSaveTokens(
@@ -31,7 +32,7 @@ function isIUser(data: any): data is IUser {
   );
 }
 
-export async function createUser({
+async function createUser({
   username,
   email,
   password,
@@ -81,4 +82,22 @@ export async function createUser({
   }
 }
 
-export { createAndSaveTokens, isIUser };
+function sendCookies(
+  res: Response,
+  cookieName: string,
+  cookieValue: unknown,
+  cookieOptions?: CookieOptions
+) {
+  const defaultCookieOptions = {
+    maxAge: 30 * 24 * 60 * 60 * 1000,
+    secure: process.env.NODE_ENV === "production",
+    sameSite: "none",
+    httpOnly: true,
+  };
+  cookieOptions = cookieOptions
+    ? cookieOptions
+    : (defaultCookieOptions as CookieOptions);
+  res.cookie(cookieName, cookieValue, cookieOptions);
+}
+
+export { createAndSaveTokens, isIUser, createUser, sendCookies };

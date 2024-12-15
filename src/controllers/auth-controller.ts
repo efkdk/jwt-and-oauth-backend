@@ -2,7 +2,7 @@ import type { Request, Response } from "express";
 import authService from "../services/auth-service";
 import { validationResult } from "express-validator";
 import { getGoogleOauthToken, getGoogleUser } from "../services/google-service";
-import { createAndSaveTokens, createUser } from "../helpers";
+import { createAndSaveTokens, createUser, sendCookies } from "../helpers";
 import User from "../models/user";
 
 class AuthController {
@@ -15,10 +15,7 @@ class AuthController {
       }
       const { username, email, password } = req.body;
       const userData = await authService.signup(username, email, password);
-      res.cookie("refreshToken", userData.refreshToken, {
-        maxAge: 30 * 24 * 60 * 60 * 1000,
-        httpOnly: true,
-      });
+      sendCookies(res, "refreshToken", userData.refreshToken);
       res.status(201).json(userData);
     } catch (e) {
       res.status(400).json(e.message);
@@ -39,10 +36,7 @@ class AuthController {
     try {
       const { login, password }: { login: string; password: string } = req.body;
       const userData = await authService.login(login, password);
-      res.cookie("refreshToken", userData.refreshToken, {
-        maxAge: 30 * 24 * 60 * 60 * 1000,
-        httpOnly: true,
-      });
+      sendCookies(res, "refreshToken", userData.refreshToken);
       res.status(200).json(userData);
     } catch (e) {
       res.status(400).json(e.message);
@@ -64,10 +58,7 @@ class AuthController {
     try {
       const { refreshToken } = req.cookies;
       const userData = await authService.refresh(refreshToken);
-      res.cookie("refreshToken", userData.refreshToken as string, {
-        maxAge: 30 * 24 * 60 * 60 * 1000,
-        httpOnly: true,
-      });
+      sendCookies(res, "refreshToken", userData.refreshToken);
       res.status(200).json(userData);
     } catch (e) {
       res.status(400).json(e.message);
@@ -131,10 +122,7 @@ class AuthController {
         user.isVerified
       );
 
-      res.cookie("refreshToken", userData.refreshToken, {
-        maxAge: 30 * 24 * 60 * 60 * 1000,
-        httpOnly: true,
-      });
+      sendCookies(res, "refreshToken", userData.refreshToken);
       res.redirect(`${process.env.CLIENT_URL}${pathUrl}`);
     } catch (error) {
       console.log("Failed to authorize Google User", error);

@@ -54,6 +54,8 @@ For sending verification emails, you'll need to configure the following SMTP set
 - **SMTP_USER**
 - **SMTP_PASSWORD**
 
+*You can find more about smtp server configuration [here](https://www.gmass.co/blog/gmail-smtp/)*
+
 ### Running the Application
 You can run the application in development mode using:
 
